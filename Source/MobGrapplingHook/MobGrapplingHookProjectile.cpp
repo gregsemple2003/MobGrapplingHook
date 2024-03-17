@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "MobGrapplingHookProjectile.h"
+#include "MobGrapplingHookCharacter.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 
@@ -33,11 +34,21 @@ AMobGrapplingHookProjectile::AMobGrapplingHookProjectile()
 
 void AMobGrapplingHookProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	// Only add impulse and destroy projectile if we hit a physics
-	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) && OtherComp->IsSimulatingPhysics())
+	// Deactivate the projectile's movement component so it stops moving
+	if (ProjectileMovement)
 	{
-		OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
-
-		Destroy();
+		ProjectileMovement->StopMovementImmediately();
+		ProjectileMovement->SetActive(false);
+		ProjectileMovement->SetComponentTickEnabled(false);
 	}
+
+	// Optionally, attach the projectile to the surface it hit so it stays in place even if the surface moves
+	if (OtherComp && OtherComp->Mobility == EComponentMobility::Movable)
+	{
+		AttachToComponent(OtherComp, FAttachmentTransformRules::KeepWorldTransform);
+	}
+
+	auto InstigatorCharacter = Cast<AMobGrapplingHookCharacter>(GetInstigator());
+	auto InstigatorCharacterMovement = InstigatorCharacter ? InstigatorCharacter->GetCharacterMovement<UMobGrapplingHookCharacterMovementComponent>() : nullptr;
+	InstigatorCharacterMovement->StartGrappling(GetActorLocation());
 }

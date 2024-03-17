@@ -41,7 +41,8 @@ void UTP_WeaponComponent::Fire()
 			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 	
 			// Spawn the projectile at the muzzle
-			World->SpawnActor<AMobGrapplingHookProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+			auto Projectile = World->SpawnActor<AMobGrapplingHookProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+			Projectile->SetInstigator(Character);
 		}
 	}
 	

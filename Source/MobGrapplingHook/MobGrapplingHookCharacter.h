@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "MobGrapplingHookCharacterMovementComponent.h"
 #include "MobGrapplingHookCharacter.generated.h"
 
 class UInputComponent;
@@ -42,7 +43,7 @@ class AMobGrapplingHookCharacter : public ACharacter
 	UInputAction* MoveAction;
 	
 public:
-	AMobGrapplingHookCharacter();
+	AMobGrapplingHookCharacter(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	virtual void BeginPlay();
@@ -71,6 +72,8 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	void OnStopGrappleInput(const FInputActionValue& Value);
 
 protected:
 	// APawn interface

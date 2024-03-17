@@ -16,7 +16,8 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 //////////////////////////////////////////////////////////////////////////
 // AMobGrapplingHookCharacter
 
-AMobGrapplingHookCharacter::AMobGrapplingHookCharacter()
+AMobGrapplingHookCharacter::AMobGrapplingHookCharacter(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<UMobGrapplingHookCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
 	// Character doesnt have a rifle at start
 	bHasRifle = false;
@@ -54,7 +55,6 @@ void AMobGrapplingHookCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -65,7 +65,7 @@ void AMobGrapplingHookCharacter::SetupPlayerInputComponent(UInputComponent* Play
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		// Moving
@@ -73,6 +73,9 @@ void AMobGrapplingHookCharacter::SetupPlayerInputComponent(UInputComponent* Play
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMobGrapplingHookCharacter::Look);
+
+		// Stop Grapple
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AMobGrapplingHookCharacter::OnStopGrappleInput);
 	}
 	else
 	{
@@ -80,6 +83,11 @@ void AMobGrapplingHookCharacter::SetupPlayerInputComponent(UInputComponent* Play
 	}
 }
 
+void AMobGrapplingHookCharacter::OnStopGrappleInput(const FInputActionValue& Value)
+{
+	auto CharacterMovementComponent = GetCharacterMovement<UMobGrapplingHookCharacterMovementComponent>();
+	CharacterMovementComponent->StopGrappling();
+}
 
 void AMobGrapplingHookCharacter::Move(const FInputActionValue& Value)
 {
