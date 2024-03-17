@@ -34,6 +34,13 @@ AMobGrapplingHookProjectile::AMobGrapplingHookProjectile()
 
 void AMobGrapplingHookProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	if (bHit)
+	{
+		return;
+	}
+
+	bHit = true;
+
 	// Deactivate the projectile's movement component so it stops moving
 	if (ProjectileMovement)
 	{

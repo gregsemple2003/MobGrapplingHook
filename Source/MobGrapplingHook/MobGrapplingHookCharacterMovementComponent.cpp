@@ -4,12 +4,19 @@ void UMobGrapplingHookCharacterMovementComponent::PhysCustom(float DeltaTime, in
 {
     if (MovementMode == CUSTOM_MovementMode_Grapple)
     {
+        // Check if the actor is already within the minimum distance to the grapple target
+        FVector CurrentLocation = UpdatedComponent->GetComponentLocation();
+        float DistanceToTarget = FVector::Dist(CurrentLocation, GrappleTargetPoint);
+        if (DistanceToTarget <= StopPullingThreshold)
+        {
+            // Close enough, do nothing
+            return;
+        }
+
         // Use the same function to move as the CMC does for normal moves (PhysWalking, PhysFalling)
         // I believe this should work with other forms of additive velocity (e.g. from an explosion), but would need more testing
-        FVector CurrentLocation = UpdatedComponent->GetComponentLocation();
         FVector Direction = (GrappleTargetPoint - CurrentLocation).GetSafeNormal();
-        float Speed = 600.0f; // Grapple speed, adjust as necessary, todo make a property in the class
-        FVector DesiredMovement = Direction * Speed * DeltaTime;
+        FVector DesiredMovement = Direction * PullSpeed * DeltaTime;
 
         // Attempt the linear move, stop on hit
         FHitResult Hit(1.f);
@@ -27,10 +34,43 @@ void UMobGrapplingHookCharacterMovementComponent::StartGrappling(FVector Grapple
 {
     GrappleTargetPoint = GrapplePoint;
     SetMovementMode(MOVE_Custom, CUSTOM_MovementMode_Grapple);
+
+    if (GetOwnerRole() == ROLE_Authority)
+    {
+        MulticastStartGrappling(GrapplePoint);
+    }
 }
 
 void UMobGrapplingHookCharacterMovementComponent::StopGrappling()
 {
     // Reset movement mode to walking, which should immediately put us into falling/walking as appropriate
+    GrappleTargetPoint = FVector::ZeroVector;
     SetMovementMode(MOVE_Walking);
+
+    if (GetOwnerRole() == ROLE_Authority)
+    {
+        MulticastStopGrappling();
+    }
 }
+
+void UMobGrapplingHookCharacterMovementComponent::MulticastStartGrappling_Implementation(FVector GrapplePoint)
+{
+    if (GetOwnerRole() < ROLE_Authority)
+    {
+        StartGrappling(GrapplePoint);
+    }
+}
+
+void UMobGrapplingHookCharacterMovementComponent::MulticastStopGrappling_Implementation()
+{
+    if (GetOwnerRole() < ROLE_Authority)
+    {
+        StopGrappling();
+    }
+}
+
+void UMobGrapplingHookCharacterMovementComponent::RequestStopGrappling_Implementation()
+{
+    StopGrappling();
+}
+

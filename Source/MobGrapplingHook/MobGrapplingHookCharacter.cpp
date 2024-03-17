@@ -74,7 +74,7 @@ void AMobGrapplingHookCharacter::SetupPlayerInputComponent(UInputComponent* Play
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMobGrapplingHookCharacter::Look);
 
-		// Stop Grapple
+		// Stop Grapple (todo move to CMC)
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AMobGrapplingHookCharacter::OnStopGrappleInput);
 	}
 	else
@@ -85,8 +85,9 @@ void AMobGrapplingHookCharacter::SetupPlayerInputComponent(UInputComponent* Play
 
 void AMobGrapplingHookCharacter::OnStopGrappleInput(const FInputActionValue& Value)
 {
+	// We do this non-predictively, though it probably would work to just StopGrappling locally since it can never fail.
 	auto CharacterMovementComponent = GetCharacterMovement<UMobGrapplingHookCharacterMovementComponent>();
-	CharacterMovementComponent->StopGrappling();
+	CharacterMovementComponent->RequestStopGrappling(); 
 }
 
 void AMobGrapplingHookCharacter::Move(const FInputActionValue& Value)

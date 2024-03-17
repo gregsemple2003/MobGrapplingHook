@@ -49,6 +49,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void Fire();
 
+	// RPC/input handling of the fire action
+	UFUNCTION(Server, Reliable)
+	void RequestFire();
+	void RequestFire_Implementation();
+	void OnFireInput();
+
 protected:
 	/** Ends gameplay for this component. */
 	UFUNCTION()

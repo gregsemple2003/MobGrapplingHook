@@ -64,6 +64,24 @@ void UTP_WeaponComponent::Fire()
 	}
 }
 
+void UTP_WeaponComponent::OnFireInput()
+{
+	// Predictive local action to spawn projectile; todo rollback etc
+	// In practice, we'd setup a scope so that any actions that may need to be rolled back like local
+	// actor spawns or ammo updates are associated with a prediction sequence number, then we'd
+	// send the sequence number with our request below.
+	Fire(); 
+
+	// Send request to fire in parallel, which will spawn the projectile grapple hook and send us the target
+	// point.
+	RequestFire();
+}
+
+void UTP_WeaponComponent::RequestFire_Implementation()
+{
+	Fire();
+}
+
 void UTP_WeaponComponent::AttachWeapon(AMobGrapplingHookCharacter* TargetCharacter)
 {
 	Character = TargetCharacter;
@@ -93,7 +111,7 @@ void UTP_WeaponComponent::AttachWeapon(AMobGrapplingHookCharacter* TargetCharact
 		if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent))
 		{
 			// Fire
-			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &UTP_WeaponComponent::Fire);
+			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &UTP_WeaponComponent::OnFireInput);
 		}
 	}
 }
