@@ -43,6 +43,12 @@ void UMobGrapplingHookCharacterMovementComponent::StartGrappling(FVector Grapple
 
 void UMobGrapplingHookCharacterMovementComponent::StopGrappling()
 {
+    // Check if we've already stopped, e.g. due to local prediction
+    if (GrappleTargetPoint == FVector::ZeroVector)
+    {
+        return;
+    }
+
     // Reset movement mode to walking, which should immediately put us into falling/walking as appropriate
     GrappleTargetPoint = FVector::ZeroVector;
     SetMovementMode(MOVE_Walking);

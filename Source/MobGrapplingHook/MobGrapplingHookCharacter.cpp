@@ -84,10 +84,15 @@ void AMobGrapplingHookCharacter::SetupPlayerInputComponent(UInputComponent* Play
 }
 
 void AMobGrapplingHookCharacter::OnStopGrappleInput(const FInputActionValue& Value)
-{
-	// We do this non-predictively, though it probably would work to just StopGrappling locally since it can never fail.
+{	
 	auto CharacterMovementComponent = GetCharacterMovement<UMobGrapplingHookCharacterMovementComponent>();
-	CharacterMovementComponent->RequestStopGrappling(); 
+
+	// Predictively stop grappling, since this cannot fail and we want to be responsive in poor latency conditions.
+	// We don't need to track any state to rollback on failure; movement sync issues will be corrected by ClientAdjustPosition.
+	CharacterMovementComponent->StopGrappling();
+
+	// Send the request to the server.
+	CharacterMovementComponent->RequestStopGrappling();
 }
 
 void AMobGrapplingHookCharacter::Move(const FInputActionValue& Value)
